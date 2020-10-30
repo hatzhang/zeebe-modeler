@@ -22,10 +22,6 @@ import {
   getBusinessObject
 } from 'bpmn-js/lib/util/ModelUtil';
 
-import TestContainer from 'mocha-test-container-support';
-
-import propertiesPanelModule from 'bpmn-js-properties-panel';
-
 import extensionElementsHelper from 'bpmn-js-properties-panel/lib/helper/ExtensionElementsHelper';
 
 import {
@@ -34,11 +30,19 @@ import {
   queryAll as domQueryAll
 } from 'min-dom';
 
+import TestContainer from 'mocha-test-container-support';
+
+import contextPadModule from 'bpmn-js/lib/features/context-pad';
 import coreModule from 'bpmn-js/lib/core';
-import selectionModule from 'diagram-js/lib/features/selection';
 import modelingModule from 'bpmn-js/lib/features/modeling';
+import paletteModule from 'bpmn-js/lib/features/palette';
+import propertiesPanelModule from 'bpmn-js-properties-panel';
 import propertiesProviderModule from '..';
+import selectionModule from 'diagram-js/lib/features/selection';
 import zeebeModdleExtensions from 'zeebe-bpmn-moddle/resources/zeebe';
+
+import customModelingModule from '../../modeling';
+import customModules from '../..';
 
 const HIDE_CLASS = 'bpp-hidden';
 
@@ -49,11 +53,15 @@ describe('customs - input output property tab', function() {
   const diagramXML = require('./InputOutput.bpmn');
 
   const testModules = [
+    contextPadModule,
     coreModule,
     modelingModule,
-    selectionModule,
+    paletteModule,
     propertiesPanelModule,
-    propertiesProviderModule
+    propertiesProviderModule,
+    selectionModule,
+    customModelingModule,
+    customModules
   ];
 
   const moddleExtensions = {
@@ -72,78 +80,73 @@ describe('customs - input output property tab', function() {
   }));
 
   beforeEach(inject(function(commandStack, propertiesPanel) {
-
-    const undoButton = document.createElement('button');
-    undoButton.textContent = 'UNDO';
-
-    undoButton.addEventListener('click', () => {
-      commandStack.undo();
-    });
-
-    container.appendChild(undoButton);
-
     propertiesPanel.attachTo(container);
   }));
 
-  it('should fetch empty list of input and output parameters', inject(function(selection, elementRegistry) {
+  describe('fetch parameters', function() {
 
-    // given
-    const shape = elementRegistry.get('ServiceTask_empty'),
-          bo = getBusinessObject(shape);
+    it('should fetch empty list of input and output parameters', inject(function(selection, elementRegistry) {
 
-    // assume
-    expect(getInputParameters(bo).length).to.equal(0);
-    expect(getOutputParameters(bo).length).to.equal(0);
+      // given
+      const shape = elementRegistry.get('ServiceTask_empty'),
+            bo = getBusinessObject(shape);
 
-    // when
-    selection.select(shape);
+      // assume
+      expect(getInputParameters(bo).length).to.equal(0);
+      expect(getOutputParameters(bo).length).to.equal(0);
 
-    // then
-    const inputParameterEntries = getInputParameterCollapsibles(container);
-    expect(inputParameterEntries.length).to.equal(0);
+      // when
+      selection.select(shape);
 
-    const outputParameterEntries = getOutputParameterCollapsibles(container);
-    expect(outputParameterEntries.length).to.equal(0);
-  }));
+      // then
+      const inputParameterEntries = getInputParameterCollapsibles(container);
+      expect(inputParameterEntries.length).to.equal(0);
 
-
-  it('should fetch list of input parameters', inject(function(selection, elementRegistry) {
-
-    // given
-    const shape = elementRegistry.get('ServiceTask_1'),
-          bo = getBusinessObject(shape);
-
-    // assume
-    expect(getInputParameters(bo).length).to.equal(4);
-
-    // when
-    selection.select(shape);
-
-    // then
-    const inputParameterEntries = getInputParameterCollapsibles(container);
-    expect(inputParameterEntries.length).to.equal(4);
-  }));
+      const outputParameterEntries = getOutputParameterCollapsibles(container);
+      expect(outputParameterEntries.length).to.equal(0);
+    }));
 
 
-  it('should fetch list of output parameters', inject(function(selection, elementRegistry) {
+    it('should fetch list of input parameters', inject(function(selection, elementRegistry) {
 
-    // given
-    const shape = elementRegistry.get('ServiceTask_1'),
-          bo = getBusinessObject(shape);
+      // given
+      const shape = elementRegistry.get('ServiceTask_1'),
+            bo = getBusinessObject(shape);
 
-    // assume
-    expect(getOutputParameters(bo).length).to.equal(4);
+      // assume
+      expect(getInputParameters(bo).length).to.equal(4);
 
-    // when
-    selection.select(shape);
+      // when
+      selection.select(shape);
 
-    // then
-    const outputParameterEntries = getOutputParameterCollapsibles(container);
-    expect(outputParameterEntries.length).to.equal(4);
-  }));
+      // then
+      const inputParameterEntries = getInputParameterCollapsibles(container);
+      expect(inputParameterEntries.length).to.equal(4);
+    }));
 
+
+    it('should fetch list of output parameters', inject(function(selection, elementRegistry) {
+
+      // given
+      const shape = elementRegistry.get('ServiceTask_1'),
+            bo = getBusinessObject(shape);
+
+      // assume
+      expect(getOutputParameters(bo).length).to.equal(4);
+
+      // when
+      selection.select(shape);
+
+      // then
+      const outputParameterEntries = getOutputParameterCollapsibles(container);
+      expect(outputParameterEntries.length).to.equal(4);
+    }));
+
+
+  });
 
   describe('availability', function() {
+
 
     it('should display input and output parameters for ServiceTask', inject(
       function(selection, elementRegistry) {
@@ -343,6 +346,7 @@ describe('customs - input output property tab', function() {
 
     describe('of input parameters', function() {
 
+
       it('should initially be collapsed for all', function() {
 
         // then
@@ -396,6 +400,7 @@ describe('customs - input output property tab', function() {
 
 
     describe('of output parameters', function() {
+
 
       it('should initially be collapsed for all', function() {
 
@@ -472,6 +477,7 @@ describe('customs - input output property tab', function() {
 
     describe('on the business object', function() {
 
+
       it('should execute', function() {
 
         // then
@@ -504,6 +510,7 @@ describe('customs - input output property tab', function() {
 
 
     describe('in the DOM', function() {
+
 
       it('should execute', function() {
 
@@ -559,6 +566,7 @@ describe('customs - input output property tab', function() {
 
     describe('on the business object', function() {
 
+
       it('should execute', function() {
 
         // then
@@ -591,6 +599,7 @@ describe('customs - input output property tab', function() {
 
 
     describe('in the DOM', function() {
+
 
       it('should execute', function() {
 
@@ -646,6 +655,7 @@ describe('customs - input output property tab', function() {
 
     describe('on the business object', function() {
 
+
       it('should execute', function() {
 
         // then
@@ -679,6 +689,7 @@ describe('customs - input output property tab', function() {
 
 
     describe('in the DOM', function() {
+
 
       it('should execute', function() {
 
@@ -735,6 +746,7 @@ describe('customs - input output property tab', function() {
 
     describe('on the business object', function() {
 
+
       it('should execute', function() {
 
         // then
@@ -768,6 +780,7 @@ describe('customs - input output property tab', function() {
 
 
     describe('in the DOM', function() {
+
 
       it('should execute', function() {
 
@@ -824,6 +837,7 @@ describe('customs - input output property tab', function() {
 
 
     describe('on the business object', function() {
+
 
       it('should execute', function() {
 
@@ -887,6 +901,7 @@ describe('customs - input output property tab', function() {
 
 
       describe('in the DOM', function() {
+
 
         it('should execute', function() {
 
@@ -961,6 +976,7 @@ describe('customs - input output property tab', function() {
 
       describe('on the business object', function() {
 
+
         it('should execute', function() {
 
           // then
@@ -1020,6 +1036,7 @@ describe('customs - input output property tab', function() {
 
 
       describe('in the DOM', function() {
+
 
         it('should execute', function() {
 
@@ -1094,6 +1111,7 @@ describe('customs - input output property tab', function() {
 
       describe('on the business object', function() {
 
+
         it('should execute', function() {
 
           // then
@@ -1158,6 +1176,7 @@ describe('customs - input output property tab', function() {
 
       describe('in the DOM', function() {
 
+
         it('should execute', function() {
 
           // then
@@ -1210,6 +1229,7 @@ describe('customs - input output property tab', function() {
 
 
       describe('on the business object', function() {
+
 
         it('should execute', function() {
 
@@ -1270,6 +1290,7 @@ describe('customs - input output property tab', function() {
 
       describe('in the DOM', function() {
 
+
         it('should execute', function() {
 
           // then
@@ -1322,6 +1343,7 @@ describe('customs - input output property tab', function() {
 
 
       describe('on the business object', function() {
+
 
         it('should execute', function() {
 
